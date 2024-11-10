@@ -1,63 +1,51 @@
-import haxe.Exception;
-import haxe.Json;
 import sys.io.File;
-
-using StringTools;
-
-typedef Haxelib = {
-   var version: String;
-}
 
 class Write
 {
    public static function main()
    {
-      switch Sys.args()
+      var args = Sys.args();
+      var buildNumber = Std.parseInt(args[0]);
+      if (buildNumber<1 || buildNumber==null)
+         throw "Usage: Write buildNumber";
+
+
+      var jsonFile = "haxelib.json";
+      var lines = File.getContent(jsonFile).split("\n");
+      var idx = 0;
+      var versionMatch = ~/(.*"version"\s*:\s*")(.*)(".*)/;
+      var found = false;
+      var newVersion = "";
+      while(idx<lines.length)
       {
-         case [ version ] if (version.startsWith('v')):
-            switch version.substr(1).split('.')
-            {
-               case [ previousMajor, previousMinor, previousPatch ]:
-                  final jsonFile = "haxelib.json";
-                  final json     = (cast Json.parse(File.getContent(jsonFile)) : Haxelib);
-
-                  switch json.version.split('.')
-                  {
-                     case [ newMajor, newMinor, _ ]:
-                        if (newMajor < previousMajor || (newMajor == previousMajor && newMinor < previousMinor))
-                        {
-                           throw new Exception('Version in haxelib.json is older than the last tag');
-                        }
-
-                        if (newMajor > previousMajor || newMinor > previousMinor)
-                        {
-                           json.version = '$newMajor.$newMinor.0';
-                        }
-                        else
-                        {
-                           json.version = '$newMajor.$newMinor.${ Std.parseInt(previousPatch) + 1 }';
-                        }
-                     case _:
-                        throw new Exception('Invalid version in haxelib.json');
-                  }
-
-                  File.saveContent(jsonFile, Json.stringify(json, '\t'));
-
-                  final define = "HXCPP_VERSION";
-                  final lines  = [
-                     '#ifndef $define',
-                     '#define $define "${ json.version }"',
-                     '#endif'
-                  ];
-
-                  File.saveContent("include/HxcppVersion.h", lines.join("\n"));
-
-                  Sys.println("hxcpp_release=" + json.version );
-               case _:
-                  throw new Exception('Invalid version in tag');
-            }
-         case other:
-            throw new Exception('Invalid version $other');
+         if (versionMatch.match(lines[idx]))
+         {
+            var parts = versionMatch.matched(2).split(".");
+            if (parts.length==3)
+               parts[2] = buildNumber+"";
+            else
+               parts.push(buildNumber+"");
+            newVersion = parts.join(".");
+            lines[idx]=versionMatch.matched(1) + newVersion + versionMatch.matched(3);
+            found = true;
+            break;
+         }
+         idx++;
       }
+      if (!found)
+         throw "Could not find version in " + jsonFile;
+
+      File.saveContent(jsonFile, lines.join("\n") );
+
+      var writeVersionFilename = "include/HxcppVersion.h";
+      var define = "HXCPP_VERSION";
+      var lines = [
+         '#ifndef $define',
+         '#define $define "$newVersion"',
+         '#endif'
+      ];
+      File.saveContent( writeVersionFilename, lines.join("\n") );
+
+      Sys.println("hxcpp_release=" + newVersion );
    }
 }

@@ -1,7 +1,6 @@
 import cpp.cppia.Host;
 
 import HostBase;
-import HostExtendedRoot;
 
 class HostOne implements pack.HostInterface
 {
@@ -85,20 +84,6 @@ class CppiaHost
             Sys.println("Bad cppia closure");
             Sys.exit(-1);
          }
-
-         #if (haxe >= version("4.3.6"))
-         if (Common.clientRoot == null) {
-            Sys.println("null client root class");
-            Sys.exit(-1);
-         }
-         switch Common.clientRoot.values {
-            case [ 0, 1, 2 ]:
-               //
-            case _:
-               Sys.println("Unexpected items in array");
-               Sys.exit(-1);   
-         }
-         #end
       }
    }
 }

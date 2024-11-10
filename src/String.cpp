@@ -2261,7 +2261,9 @@ public:
    };
 
    hx::Class __GetClass() const { return __StringClass; }
+   #if (HXCPP_API_LEVEL<331)
    bool __Is(hx::Object *inClass) const { return dynamic_cast< StringData *>(inClass); }
+   #endif
 
    virtual int __GetType() const { return vtString; }
    String __ToString() const { return mValue; }

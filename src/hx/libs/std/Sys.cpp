@@ -669,7 +669,7 @@ Array<String> _hx_std_sys_read_dir( String p )
    const wchar_t *path = p.wchar_str();
    size_t len = wcslen(path);
    if (len>MAX_PATH)
-      hx::Throw(HX_CSTRING("Invalid directory"));
+      return null();
 
    WIN32_FIND_DATAW d;
    HANDLE handle;
@@ -698,7 +698,7 @@ Array<String> _hx_std_sys_read_dir( String p )
    if( handle == INVALID_HANDLE_VALUE )
    {
       hx::ExitGCFreeZone();
-      hx::Throw(HX_CSTRING("Invalid directory"));
+      return null();
    }
    while( true )
    {

@@ -267,12 +267,11 @@ class Setup
 
    public static function setupEmscripten(ioDefines:Hash<String>)
    {
-      // Setup EMSDK if possible - else assume developer has it in path
-      if (!ioDefines.exists("EMSDK") )
+      // Setup EMSCRIPTEN_SDK if possible - else assume developer has it in path
+      if (!ioDefines.exists("EMSCRIPTEN_SDK"))
       {
          var home = ioDefines.get("HXCPP_HOME");
          var file = home + "/.emscripten";
-         Log.v('No EMSDK provided, checking $file');
          if (FileSystem.exists(file))
          {
             var content = sys.io.File.getContent(file);
@@ -286,32 +285,15 @@ class Setup
                   var val= value.matched(2);
                   if (name=="EMSCRIPTEN_ROOT")
                   {
-                     ioDefines.set("EMSDK", val);
+                     ioDefines.set("EMSCRIPTEN_SDK", val);
                   }
                   if (name=="PYTHON")
-                     ioDefines.set("EMSDK_PYTHON", val);
+                     ioDefines.set("EMSCRIPTEN_PYTHON", val);
                   if (name=="NODE_JS")
-                     ioDefines.set("EMSDK_NODE", val);
+                     ioDefines.set("EMSCRIPTEN_NODE_JS", val);
                }
             }
          }
-      }
-      else
-      {
-         Log.v('Using provided EMSDK ${ioDefines.get("EMSDK")}');
-      }
-
-      if (!ioDefines.exists("EMSDK_PYTHON"))
-      {
-         Log.v("No EMSDK_PYTHON provided, using 'python'");
-      }
-      else
-         Log.v('Using provided EMSDK_PYTHON ${ioDefines.get("EMSDK_PYTHON")}');
-
-      if (!ioDefines.exists("EMSDK_NODE"))
-      {
-         Log.v("No EMSDK_NODE provided, using 'node'");
-         ioDefines.set("EMSDK_NODE", "node");
       }
    }
 

@@ -159,14 +159,6 @@ class Client
          return;
       }
 
-
-      final extending = new ClientExtendedExtendedRoot();
-
-      extending.addValue();
-
-      Common.clientRoot = extending;
-
-
       Common.clientImplementation = new ClientOne();
       Common.status = "ok";
 
