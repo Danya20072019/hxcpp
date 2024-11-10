@@ -128,54 +128,22 @@ class Log
    {
       if (colorSupported == null)
       {
-			var term = Sys.getEnv("TERM");
+         if (!BuildTool.isWindows)
+         {
+            var result = -1;
+            try
+            {
+               var process = new Process ("tput", [ "colors" ]);
+               result = process.exitCode ();
+               process.close ();
+            }
+            catch (e:Dynamic) {};
 
-			if (term == "dumb") {
-				colorSupported = false;
+            colorSupported = (result == 0);
          }
          else
          {
-				if (Sys.getEnv('CI') != null) {
-					var ciEnvNames = [
-						"GITHUB_ACTIONS",
-						"GITEA_ACTIONS",
-						"TRAVIS",
-						"CIRCLECI",
-						"APPVEYOR",
-						"GITLAB_CI",
-						"BUILDKITE",
-						"DRONE"
-					];
-
-					for (ci in ciEnvNames) {
-						if (Sys.getEnv(ci) != null) {
-							colorSupported = true;
-							break;
-						}
-					}
-
-					if (colorSupported != true && Sys.getEnv("CI_NAME") == "codeship") {
-						colorSupported = true;
-					}
-				}
-
-				if (colorSupported != true && Sys.getEnv("TEAMCITY_VERSION") != null) {
-					colorSupported = ~/^9\.(0*[1-9]\d*)\.|\d{2,}\./.match(Sys.getEnv("TEAMCITY_VERSION"));
-				}
-
-				if (colorSupported != true && term != null) {
-					colorSupported = ~/(?i)-256(color)?$/.match(term)
-						|| ~/(?i)^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux/.match(term);
-				}
-
-				if (colorSupported != true) {
-					colorSupported = Sys.getEnv("TERM_PROGRAM") == "iTerm.app"
-						|| Sys.getEnv("TERM_PROGRAM") == "Apple_Terminal"
-						|| Sys.getEnv("COLORTERM") != null
-						|| Sys.getEnv("ANSICON") != null
-						|| Sys.getEnv("ConEmuANSI") != null
-						|| Sys.getEnv("WT_SESSION") != null;
-				}
+            colorSupported = (Sys.getEnv("TERM") == "xterm" || Sys.getEnv("ANSICON") != null);
          }
       }
 
@@ -185,7 +153,8 @@ class Log
       }
       else
       {
-			return ~/\x1b\[[0-9;]*m/g.replace(output, "");
+         var colorCodes:EReg = ~/\x1b\[[^m]+m/g;
+         return colorCodes.replace(output, "");
       }
    }
 
